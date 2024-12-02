@@ -132,131 +132,70 @@ Key information is displayed for the administrator.
 4. Feedback and Notifications
 
 Clear, step-by-step messages keep the user informed about the script's progress.
-#LearnDynamics365InArabic
+<#
+    ***************************************
+    Copyright Information: 
+    This script was developed by:
+    Mohamed Hassan
+    Functional Consultant - Microsoft Dynamics 365 Business Central & LS Retail
+    Techno-functional Consultant for Microsoft Dynamics 365 Business Central & LS Retail
+    Phone: 01025329288
+    LinkedIn: https://www.linkedin.com/in/mohamed-hassan-3158b9b1/
+    YouTube: https://www.youtube.com/@Medasofit
+    ***************************************
+#>
 
-#Dynamics365ArabicTraining
+Write-Host "***************************************"
+Write-Host "Copyright (c) 2007-2024 Mohamed Hassan" -ForegroundColor Yellow
+Write-Host "Functional Consultant - Microsoft Dynamics 365 Business Central & LS Retail" -ForegroundColor Yellow
+Write-Host "Contact: 01025329288" -ForegroundColor Yellow
+Write-Host "LinkedIn: https://www.linkedin.com/in/mohamed-hassan-3158b9b1/" -ForegroundColor Yellow
+Write-Host "YouTube: https://www.youtube.com/@Medasofit" -ForegroundColor Yellow
+Write-Host "All rights reserved." -ForegroundColor Yellow
 
-#ProfessionalDynamics365Arabic
+# Import the NavAdminTool module
+Import-Module "C:\Program Files\Microsoft Dynamics 365 Business Central\210\Service\NavAdminTool.ps1"
+Write-Host "NavAdminTool module imported successfully."
 
-#ArabicDynamics365Courses
+# Define Server Instance
+$serverInstance = "moh"
 
-#IT4YOU_MohamedHassan
+# Restart the server instance first
+try {
+    Restart-NAVServerInstance -ServerInstance $serverInstance -Verbose
+    Write-Host "Server instance '$serverInstance' restarted successfully."
+} catch {
+    Write-Host "Error restarting server instance '$serverInstance': $_"
+    exit
+}
 
-#MedaSofit_BusinessTech
+# Now, Export the current license information after the restart
+try {
+    $licenseInfo = Export-NAVServerLicenseInformation -ServerInstance $serverInstance
+    Write-Host "License information exported successfully."
+} catch {
+    Write-Host "Error exporting license information: $_"
+    exit
+}
 
-#MohamedHassan_IT4YOU
+# Check if the license info was retrieved successfully
+if ($licenseInfo -ne $null) {
+    # Check if ExpirationDate exists and is not null
+    if ($licenseInfo.ExpirationDate -ne $null) {
+        # Display the current license expiration date
+        $expirationDate = $licenseInfo.ExpirationDate.ToString("M/d/yyyy")
+        Write-Host "Current license expires on: $expirationDate"
+    } else {
+        Write-Host "Expiration date not found in the license information."
+    }
 
-#TechChannel_MedaSofit
-
-#Dynamics365_بالعربية
+    # Display all other license details
+    Write-Host "License Details:"
+    Write-Host $licenseInfo
+} else {
+    Write-Host "No license information found."-ForegroundColor Magenta
+}
 
 #دورات_Dynamics365_باحتراف
 
-#Dynamics365_للمحترفين_بالعربي
-
-#IT4YOU_محمد_حسن
-
-#MedaSofit_تكنولوجيا_الأعمال
-
-#MOHAMED_HASSAN_IT4YOU
-
-#قناة_التكنولوجيا_محمد_حسن
-
-
-
-
----
-
-Recommendations for Use
-
-Production Environments:
-Use stricter execution policies like RemoteSigned and avoid modifying global settings without justification.
-
-Error Handling:
-Consider extending the script to include error logs or fallback actions for smoother troubleshooting.
-
-Automation Scheduling:
-Combine this script with task scheduling tools to perform routine license exports automatically.
-
-
-
----
-
-Conclusion
-
-This PowerShell script is an efficient tool for automating license management in Dynamics 365 Business Central On-Premises. While it simplifies the process of importing, exporting, and monitoring licenses, administrators should use it cautiously in sensitive environments, ensuring policies and permissions are securely configured.
-
-
----
-
-Hashtags
-
-#Dynamics365 #PowerShell #LicenseManagement #Automation #BusinessCentral #ITSupport #NavAdminTool #OnPremisesSolutions #DataSafety
-
-$serverName = "localhost"
-$databaseName = "nav21"
-$backupPath = "C:\Program Files\Microsoft SQL Server\MSSQL15.MSSQLSERVER\MSSQL\Backup"
-$logFile = "C:\Program Files\Microsoft SQL Server\MSSQL15.MSSQLSERVER\MSSQL\Backup_log.txt"
-$backupHistoryFile = "C:\Program Files\Microsoft SQL Server\MSSQL15.MSSQLSERVER\MSSQL\Backup_History.txt"
-$daysToKeepBackup = 30
-
-# 1. Checking if enough disk space is available
-$drive = Get-PSDrive C
-if ($drive.Free -lt 5GB) {
-    Write-Host "Not enough space on the disk. Exiting the backup process."
-    exit
-}
-
-# 2. Function to show last backup date
-function Show-LastBackupDate {
-    if (Test-Path $backupHistoryFile) {
-        $lastBackup = Get-Content $backupHistoryFile | Select-Object -Last 1
-        Write-Host "Last backup was on: $lastBackup"
-    } else {
-        Write-Host "No backup history found."
-    }
-}
-
-# Show last backup info
-Show-LastBackupDate
-
-# 3. Check if database exists
-$databaseExists = Invoke-Sqlcmd -Query "SELECT COUNT(*) FROM sys.databases WHERE name = '$databaseName'" -ServerInstance $serverName
-if ($databaseExists -eq 0) {
-    Write-Host "Database $databaseName not found. Skipping backup."
-    exit
-}
-
-# 4. Generate a unique backup file name with timestamp
-$dateTime = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
-$backupFile = "$backupPath\$databaseName-$dateTime.bak"
-
-Write-Host "Starting backup for database $databaseName..."
-
-# 5. Backup Database
-try {
-    Invoke-Sqlcmd -Query "BACKUP DATABASE [$databaseName] TO DISK = N'$backupFile' WITH COMPRESSION" -ServerInstance $serverName
-    Write-Host "Backup completed successfully."
-    
-    # Add to backup history
-    Add-Content -Path $backupHistoryFile -Value "$(Get-Date) : Backup for database $databaseName. Backup file: $backupFile"
-
-} catch {
-    $errorMessage = "Error occurred: $_"
-    Add-Content -Path $logFile -Value "$(Get-Date): $errorMessage"
-    Write-Host "An error occurred. Check the log file for details."
-}
-
-# 6. Delete old backups if necessary
-$backupFiles = Get-ChildItem -Path $backupPath -Filter "*.bak"
-foreach ($file in $backupFiles) {
-    if ($file.CreationTime -lt (Get-Date).AddDays(-$daysToKeepBackup)) {
-        Remove-Item $file.FullName
-        Write-Host "Old backup deleted: $file"
-    }
-}
-
-# Final backup status
-Show-LastBackupDate
-
-
+#
