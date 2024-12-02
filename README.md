@@ -2,7 +2,7 @@
 
 Importing and Exporting Licenses in Dynamics 365 Business Central
 Introduction
-
+https://youtu.be/Lou7oUT-Ruk
 Managing licenses in Dynamics 365 Business Central On-Premises is a routine task for administrators. This PowerShell script automates the process of importing, exporting, and managing licenses, ensuring efficiency and minimizing errors.
 
 
